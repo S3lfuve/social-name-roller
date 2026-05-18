@@ -1,4 +1,9 @@
-# TG Names Roller
+<img width="762" height="652" alt="{C032ED8B-9BDA-468A-B101-E98E390E1F91}" src="https://github.com/user-attachments/assets/c456cdc7-b848-4e49-ac38-94f373a3758a" />
+<img width="762" height="774" alt="{4F849069-A447-4680-A796-0D820613B28C}" src="https://github.com/user-attachments/assets/444ce9f7-bdac-4f20-9d84-0cb77ba50fbd" />
+<img width="762" height="774" alt="{5D08E4C2-E5B8-4A64-A727-1B71651FB77F}" src="https://github.com/user-attachments/assets/3fd4b839-c081-4f74-b5f8-5f031a2a4b3f" />
+<img width="2560" height="1392" alt="{6524FC83-D3BF-4942-AD1C-7C7E1695DBF8}" src="https://github.com/user-attachments/assets/7eacb493-d70b-4086-8075-fc4e95645c07" />
+
+<img width="762" height="652" alt="{C032ED8B-9BDA-468A-B101-E98E390E1F91}" src="https://github.com/user-attachments/assets/14c792a8-d48f-4dd9-8fa5-0d19bb6eac00" /># TG Names Roller
 
 [![Windows](https://img.shields.io/badge/Windows-supported-0078D6?logo=windows&logoColor=white)](./README.md)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](./README.md)
@@ -221,7 +226,3 @@ run_gui.bat
 - некоторые платформы могут отвечать нестабильно или ограничивать частые запросы
 - часть username требует ручной проверки перед использованием
 - чем выше `workers` и ниже `delay`, тем выше шанс упереться в лимиты
-
-## Скриншоты
-
-Сюда можно добавить скриншоты интерфейса, генератора и результатов проверки.
