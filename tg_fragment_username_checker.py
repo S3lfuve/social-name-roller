@@ -268,6 +268,7 @@ def check_one(username: str, services: list[str], timeout: int, delay: float) ->
                     "status": "limited",
                     "note": error or f"HTTP {code}",
                     "url": url,
+                    "warn": True,
                 }
             continue
         if not body:
@@ -277,6 +278,7 @@ def check_one(username: str, services: list[str], timeout: int, delay: float) ->
                     "status": "error",
                     "note": error or "Empty response",
                     "url": url,
+                    "warn": True,
                 }
             continue
         status, note = parse_service_status(service, username, body, int(code) if isinstance(code, int) else 0)
@@ -302,6 +304,7 @@ def check_one(username: str, services: list[str], timeout: int, delay: float) ->
                 "status": status,
                 "note": note,
                 "url": url,
+                "warn": False,
             }
 
     if checked_free and len(checked_free) + len(skipped_neutral) == len(services):
@@ -326,6 +329,7 @@ def check_one(username: str, services: list[str], timeout: int, delay: float) ->
         "note": "No decisive status",
         "url": service_url(services[0], username) if services else "",
         "skipped_neutral": skipped_neutral,
+        "warn": False,
     }
 
 
@@ -355,11 +359,35 @@ def order_words(words: list[str], mode: str) -> list[str]:
     ordered = list(words)
     if mode == "random":
         ordered = random.sample(ordered, k=len(ordered))
+    elif mode == "alphabet":
+        ordered.sort()
     elif mode == "short_first":
         ordered.sort(key=lambda w: (len(w), w))
     elif mode == "long_first":
         ordered.sort(key=lambda w: (-len(w), w))
     return ordered
+
+
+def found_separator(mode: str) -> str:
+    return {
+        "newline": "\n",
+        "space_comma_space": " , ",
+        "comma": ",",
+        "space": " ",
+    }.get(mode, "\n")
+
+
+def format_found_chunk(usernames: list[str], mode: str, needs_prefix: bool) -> str:
+    if not usernames:
+        return ""
+    values = [f"@{username}" for username in usernames]
+    separator = found_separator(mode)
+    chunk = separator.join(values)
+    if mode == "newline":
+        return chunk + "\n"
+    if needs_prefix:
+        return separator + chunk
+    return chunk
 
 
 def main() -> int:
@@ -380,9 +408,17 @@ def main() -> int:
     parser.add_argument("--check-github", action="store_true", help="Check GitHub")
     parser.add_argument("--pause-file", default="", help="If this file exists, checker waits before starting next requests")
     parser.add_argument("--stop-file", default="", help="If this file exists, checker flushes pending FREE usernames and stops")
-    parser.add_argument("--found-out", default="", help="Append found FREE usernames to this file, one per line")
+    parser.add_argument("--found-out", default="", help="Append found FREE usernames to this file")
+    parser.add_argument(
+        "--found-format",
+        choices=["newline", "space_comma_space", "comma", "space"],
+        default="newline",
+        help="How to separate usernames inside found.txt",
+    )
     parser.add_argument("--hide-busy", action="store_true", help="Do not print BUSY usernames")
-    parser.add_argument("--order", choices=["in_order", "random", "short_first", "long_first"], default="in_order", help="Sequence of username checks")
+    parser.add_argument("--hide-warn", action="store_true", help="Do not print WARN lines about limits/timeouts/errors")
+    parser.add_argument("--stop-after-error", action="store_true", help="Stop after the first timeout/rate-limit/network error warning")
+    parser.add_argument("--order", choices=["in_order", "random", "alphabet", "short_first", "long_first"], default="in_order", help="Sequence of username checks")
     args = parser.parse_args()
 
     wordlist = Path(args.wordlist).expanduser()
@@ -404,17 +440,21 @@ def main() -> int:
 
     enabled = [SERVICE_LABELS[s] for s in services]
     found_out = Path(args.found_out).expanduser() if args.found_out else None
+    found_format = args.found_format.strip().lower()
     stop_path = Path(args.stop_file) if args.stop_file else None
     print(f"Loaded {len(words)} words. Checks: {', '.join(enabled)}. CSV output disabled, printing statuses.", flush=True)
     if found_out:
-        print(f"FREE export: append to {found_out}", flush=True)
+        print(f"FREE export: append to {found_out} [{found_format}]", flush=True)
     if args.hide_busy:
         print("BUSY output hidden.", flush=True)
+    if args.hide_warn:
+        print("WARN output hidden.", flush=True)
     print(
         "Check order: "
         + {
             "in_order": "in order",
             "random": "random",
+            "alphabet": "alphabet",
             "short_first": "short first",
             "long_first": "long first",
         }[args.order],
@@ -428,8 +468,12 @@ def main() -> int:
     pause_path = Path(args.pause_file) if args.pause_file else None
     found_buffer: list[str] = []
     next_index = 0
+    next_emit_index = 0
     pending = set()
+    future_indexes: dict = {}
+    completed_rows: dict[int, dict] = {}
     paused_logged = False
+    stop_after_error_triggered = False
 
     def flush_found_buffer() -> None:
         nonlocal found_buffer
@@ -437,19 +481,21 @@ def main() -> int:
             return
         try:
             found_out.parent.mkdir(parents=True, exist_ok=True)
+            needs_prefix = found_out.exists() and found_out.stat().st_size > 0
+            chunk = format_found_chunk(found_buffer, found_format, needs_prefix)
             with found_out.open("a", encoding="utf-8", newline="") as f:
-                for username in found_buffer:
-                    f.write(f"@{username}\n")
+                f.write(chunk)
             found_buffer = []
         except Exception as e:
             print(f"[export error] {type(e).__name__}: {e}", flush=True)
 
     def handle_row(row: dict):
-        nonlocal checked, found, instagram_ignored_warned, found_buffer
+        nonlocal checked, found, instagram_ignored_warned, found_buffer, stop_after_error_triggered
         checked += 1
 
         if not instagram_ignored_warned and "instagram" in row.get("skipped_neutral", []):
-            print("[!] Instagram returned a generic anti-bot page and was ignored for some usernames.", flush=True)
+            if not args.hide_warn:
+                print("[!] Instagram returned a generic anti-bot page and was ignored for some usernames.", flush=True)
             instagram_ignored_warned = True
 
         def export_found() -> None:
@@ -461,10 +507,10 @@ def main() -> int:
                 flush_found_buffer()
 
         if row["result"] == "busy":
-            if args.hide_busy:
-                print(f"[b] @{row['username']} -> BUSY | {SERVICE_LABELS[row['service']]} - {display_url(row['url'])}", flush=True)
-            else:
+            if not args.hide_busy:
                 print(f"[-] @{row['username']} -> BUSY | {SERVICE_LABELS[row['service']]} - {display_url(row['url'])}", flush=True)
+            else:
+                print("[b]", flush=True)
             return
         if row["result"] == "free":
             found += 1
@@ -472,6 +518,18 @@ def main() -> int:
             confirmed = ", ".join(SERVICE_LABELS[s] for s in row["services"])
             print(f"[+] @{row['username']} -> FREE ! {confirmed}", flush=True)
             return
+        if row.get("warn"):
+            if not args.hide_warn:
+                level = "LIMIT" if row["status"] == "limited" else "ERROR"
+                print(
+                    f"[!] @{row['username']} -> {level} | {SERVICE_LABELS[row['service']]} - {display_url(row['url'])} ({row['note']})",
+                    flush=True,
+                )
+            if args.stop_after_error and not stop_after_error_triggered:
+                stop_after_error_triggered = True
+                flush_found_buffer()
+                if not args.hide_warn:
+                    print("[!] Stop after Error triggered. Finishing current requests and exiting.", flush=True)
         print(
             f"[?] @{row['username']} -> UNKNOWN | {SERVICE_LABELS[row['service']]} - {display_url(row['url'])} ({row['status']}: {row['note']})",
             flush=True,
@@ -483,10 +541,16 @@ def main() -> int:
                 flush_found_buffer()
                 print("Stop requested. Finishing current requests and exiting.", flush=True)
                 break
+            if stop_after_error_triggered:
+                flush_found_buffer()
+                break
             while next_index < len(words) and len(pending) < max(1, args.workers):
                 if stop_path and stop_path.exists():
                     flush_found_buffer()
                     print("Stop requested. Finishing current requests and exiting.", flush=True)
+                    break
+                if stop_after_error_triggered:
+                    flush_found_buffer()
                     break
                 if pause_path and pause_path.exists():
                     flush_found_buffer()
@@ -498,16 +562,25 @@ def main() -> int:
                 if paused_logged:
                     print("Continued.", flush=True)
                     paused_logged = False
+                row_index = next_index
                 w = words[next_index]
                 next_index += 1
-                pending.add(pool.submit(check_one, w, services, args.timeout, args.delay))
+                fut = pool.submit(check_one, w, services, args.timeout, args.delay)
+                pending.add(fut)
+                future_indexes[fut] = row_index
 
             if not pending:
                 continue
             done, pending = wait(pending, timeout=0.25, return_when=FIRST_COMPLETED)
             for fut in done:
-                handle_row(fut.result())
+                row = fut.result()
+                completed_rows[future_indexes.pop(fut)] = row
+            while next_emit_index in completed_rows:
+                handle_row(completed_rows.pop(next_emit_index))
+                next_emit_index += 1
             if stop_path and stop_path.exists():
+                break
+            if stop_after_error_triggered:
                 break
 
     flush_found_buffer()

@@ -18,6 +18,7 @@ GEN = BASE / "generate_words.py"
 CHECK = BASE / "tg_fragment_username_checker.py"
 PAUSE_FILE = BASE / ".checker_paused"
 STOP_FILE = BASE / ".checker_stop"
+QUICK_CHECK_WORDLIST = BASE / ".quick_check_username.txt"
 CONFIGS_DIR = BASE / "configs"
 VENV_PY = BASE / ".venv" / "Scripts" / "python.exe"
 VISUALIZER_INTERVAL_MS = 1500
@@ -41,32 +42,40 @@ TRANSLATIONS = {
         "action_pause": "Пауза",
         "action_clear_log": "Очистить лог",
         "action_folder": "Папка",
+        "action_quick_check": "Проверить",
         "settings_title": "Настройки интерфейса",
         "settings_language": "Язык",
         "settings_debug": "Режим отладки",
         "settings_autosave": "Автосохранять настройки в latest.json",
+        "settings_found_title": "found.txt",
+        "settings_found_format": "Формат разделения",
+        "found_format_newline": "С новой строки",
+        "found_format_space_comma_space": "Пробел + Запятая + пробел",
+        "found_format_comma": "Запятая",
+        "found_format_space": "Пробел",
         "language_ru": "Русский",
         "language_en": "Английский",
         "generator_output": "Вывод",
         "generator_words": "Слова",
         "generator_advanced": "Дополнительно",
-        "field_file": "файл",
-        "field_count": "кол-во",
-        "field_quality": "качество",
-        "field_length": "длина",
-        "field_words_in_username": "слов в юзернейме",
-        "field_scan": "скан",
-        "field_seed": "сид",
-        "field_prefix": "префикс",
-        "field_suffix": "суффикс",
-        "field_wordlist": "список",
+        "field_file": "Файл",
+        "field_count": "Кол-во",
+        "field_quality": "Качество слов",
+        "field_length": "Длина",
+        "field_words_in_username": "Слов в юзернейме",
+        "field_scan": "Скан",
+        "field_seed": "Сид",
+        "field_prefix": "Префикс",
+        "field_suffix": "Суффикс",
+        "field_wordlist": "Список",
         "field_workers": "воркеры",
-        "field_limit": "лимит",
+        "field_limit": "Лимит",
         "field_delay": "задержка",
         "generator_mode": "Режим",
         "generator_mode_english_words": "Англ. слова",
         "generator_mode_translit": "Транслит",
         "generator_mode_random_letters": "Случайные буквы",
+        "generator_vowel_after_consonant": "Гл. после согл.",
         "generator_add_articles": "Артикли",
         "generator_dedupe_letters": "Убрать дубли букв",
         "generator_delete_file": "Удалить файл",
@@ -75,14 +84,26 @@ TRANSLATIONS = {
         "check_order": "Порядок проверки",
         "check_order_in_order": "По порядку",
         "check_order_random": "Случайно",
+        "check_order_alphabet": "Алфавит",
         "check_order_short_first": "Сначала короткие",
         "check_order_long_first": "Сначала длинные",
         "check_checks": "Проверки",
         "check_output": "Вывод",
         "check_export_found": "Экспорт FREE в found.txt",
         "check_hide_busy": "Скрывать BUSY",
+        "check_hide_warn": "Скрывать WARN",
+        "check_stop_after_error": "Стоп после ошибки",
         "check_delete_found": "Удалить found.txt",
-        "warning_reserved": "Предупреждение: Программа может ошибочно помечать зарезервированные платформой юзернеймы как свободные, требуется ручная проверка",
+        "check_copy_found": "Скопировать found.txt",
+        "quick_check_empty_title": "Пустой юзернейм",
+        "quick_check_empty_message": "Введи юзернейм для быстрой проверки",
+        "quick_check_invalid_title": "Неверный юзернейм",
+        "quick_check_invalid_message": "Допустимы только буквы A-Z без @ в начале",
+        "log_quick_check_started": "Быстрая проверка",
+        "warning_reserved": "Предупреждение: Программа может ошибочно помечать зарезервированные платформой юзернеймы как свободные, требуется ручная перепроверка. Для применения изменений настроек раздела, требуется перезапустить активный процесс подбора.",
+        "log_found_missing": "Файл found.txt отсутствует",
+        "log_found_copied": "Содержимое found.txt скопировано в буфер обмена",
+        "log_found_copy_failed": "Не смог скопировать found.txt",
         "config_save_group": "Сохранить конфиг",
         "config_name": "Название",
         "config_save": "Сохранить",
@@ -91,31 +112,39 @@ TRANSLATIONS = {
         "config_refresh": "Обновить",
         "config_load": "Загрузить",
         "config_empty_title": "Пустое имя",
-        "config_empty_message": "Введи название конфига",
+        "config_empty_message": "Введите название конфига",
         "config_missing_title": "Нет конфига",
         "config_missing_message": "Выбери существующий конфиг",
         "config_saved": "Конфиг сохранен",
         "config_loaded": "Конфиг загружен",
-        "config_save_failed": "Не смог сохранить конфиг",
-        "config_load_failed": "Не смог загрузить конфиг",
-        "config_note": "Конфиг хранит все настройки вкладок Генератор, Подбор и Settings, кроме путей words.txt и found.txt.",
+        "config_save_failed": "Не удалось сохранить конфиг",
+        "config_load_failed": "Не удалось загрузить конфиг",
+        "config_save_sections": "Сохранить:",
+        "config_load_sections": "Загрузить:",
+        "config_section_generator": "Генератор",
+        "config_section_check": "Подбор",
+        "config_section_ui": "Настройки",
+        "config_note": "Конфиг может хранить выбранные разделы Генератора, Подбора и Настроек, не содержит words.txt и found.txt.",
         "tip_output_file": "Куда сохранить список. При генерации файл будет перезаписан.",
         "tip_output_count": "Сколько юзернеймов сохранить в файл.",
-        "tip_quality": "Насколько редкими должны быть отдельные слова: 1 = частые вроде error, 5 = редкие вроде bouquet.",
+        "tip_quality": "Насколько редкими должны быть отдельные слова: 1 = частые: error, awesome 5 = редкие: bouquet, vellichor",
         "tip_length": "Итоговая длина всего юзернейма, включая prefix/suffix и все склеенные слова.",
-        "tip_words_in_username": "Сколько слов склеивать в один юзернейм. Например, 3..3 = всегда ровно три слова.",
-        "tip_generator_mode": "Англ. слова = английские слова из wordfreq. Транслит = русские слова, переведенные в латиницу. Случайные буквы = случайные строки a-z без словаря.",
-        "tip_add_articles": "Пытается добавлять a/an/the в начало или между словами, например thegrave или reaperthegrave.",
-        "tip_dedupe_letters": "Сжимает повторяющиеся буквы внутри каждого отдельного слова до склейки: spontannyh -> spontanyh. Границы между словами не трогает.",
-        "tip_scan": "Сколько слов взять из wordfreq на перебор. Больше scan = больше вариантов, но генерация медленнее.",
+        "tip_words_in_username": "Сколько слов склеивать в один юзернейм. 3..3 = ровно три слова.",
+        "tip_generator_mode": "Англ. слова = исключительно существующие английские слова. Транслит = русские слова, переведенные в латиницу. Случайные буквы = случайные сочетания букв a-z.",
+        "tip_vowel_after_consonant": "После каждой согласной будет ставиться гласная.",
+        "tip_add_articles": "Пытается добавлять a/an/the в начало или между словами, например: thegrave, reaperthegrave.",
+        "tip_dedupe_letters": "Удаляет повторяющиеся буквы внутри каждого отдельного слова до склейки: spontannyh -> spontanyh.",
+        "tip_scan": "Сколько слов взять из словаря на перебор. Больше scan = больше вариантов, но медленнее.",
         "tip_seed": "Фиксирует случайность. Один и тот же seed дает повторяемый результат.",
         "tip_prefix": "Текст, который будет добавляться в начало каждого юзернейма.",
         "tip_suffix": "Текст, который будет добавляться в конец каждого юзернейма.",
-        "tip_wordlist": "Файл со словами или готовыми юзернеймами для проверки.",
-        "tip_workers": "Сколько запросов запускать параллельно. Слишком большое значение чаще упирается в лимиты.",
-        "tip_limit": "Сколько строк проверить. 0 означает проверить весь файл.",
-        "tip_delay": "Небольшая случайная пауза между запросами на каждом worker, чтобы реже ловить лимиты.",
-        "tip_check_order": "В каком порядке обходить список: как в файле, случайно, от коротких к длинным или наоборот.",
+        "tip_wordlist": "Файл со сгенерированными юзернеймами для проверки.",
+        "tip_workers": "Сколько запросов отправлять параллельно. Слишком большое значение чаще кидает в лимиты.",
+        "tip_limit": "Сколько строк проверить. 0 - весь файл.",
+        "tip_delay": "Небольшая случайная пауза между каждой пачкой запросов, чтобы реже ловить лимиты.",
+        "tip_stop_after_error": "Автоматически останавливает поиск после timeout, rate limit или другой сетевой ошибки.",
+        "tip_check_order": "В каком порядке обходить список. Порядок также влияет на found.txt",
+        "tip_quick_check": "Быстрая проверка одного юзернейма по выбранным параметрам",
     },
     "en": {
         "tab_generator": "Generator",
@@ -129,24 +158,31 @@ TRANSLATIONS = {
         "action_pause": "Pause",
         "action_clear_log": "Clear log",
         "action_folder": "Folder",
+        "action_quick_check": "Check",
         "settings_title": "Interface settings",
         "settings_language": "Language",
         "settings_debug": "Debug mode",
         "settings_autosave": "Autosave settings to latest.json",
+        "settings_found_title": "found.txt",
+        "settings_found_format": "Separator format",
+        "found_format_newline": "New line",
+        "found_format_space_comma_space": "Space + comma + space",
+        "found_format_comma": "Comma",
+        "found_format_space": "Space",
         "language_ru": "Russian",
         "language_en": "English",
         "generator_output": "Output",
         "generator_words": "Words",
         "generator_advanced": "Advanced",
-        "field_file": "file",
+        "field_file": "File",
         "field_count": "count",
-        "field_quality": "quality",
-        "field_length": "length",
-        "field_words_in_username": "words in username",
-        "field_scan": "scan",
-        "field_seed": "seed",
-        "field_prefix": "prefix",
-        "field_suffix": "suffix",
+        "field_quality": "Quality",
+        "field_length": "Length",
+        "field_words_in_username": "Words in username",
+        "field_scan": "Scan",
+        "field_seed": "Seed",
+        "field_prefix": "Prefix",
+        "field_suffix": "Suffix",
         "field_wordlist": "wordlist",
         "field_workers": "workers",
         "field_limit": "limit",
@@ -155,6 +191,7 @@ TRANSLATIONS = {
         "generator_mode_english_words": "English words",
         "generator_mode_translit": "Translit",
         "generator_mode_random_letters": "Random letters",
+        "generator_vowel_after_consonant": "Vowel after consonant",
         "generator_add_articles": "Articles",
         "generator_dedupe_letters": "Remove duplicate letters",
         "generator_delete_file": "Delete file",
@@ -163,14 +200,26 @@ TRANSLATIONS = {
         "check_order": "Check order",
         "check_order_in_order": "In order",
         "check_order_random": "Random",
+        "check_order_alphabet": "Alphabet",
         "check_order_short_first": "Shortest first",
         "check_order_long_first": "Longest first",
         "check_checks": "Checks",
         "check_output": "Output",
         "check_export_found": "Export FREE to found.txt",
         "check_hide_busy": "Hide BUSY",
+        "check_hide_warn": "Hide WARN",
+        "check_stop_after_error": "Stop after Error",
         "check_delete_found": "Delete found.txt",
-        "warning_reserved": "Warning: The program may mistakenly mark platform-reserved usernames as free. Manual verification is required.",
+        "check_copy_found": "Copy found.txt",
+        "quick_check_empty_title": "Empty username",
+        "quick_check_empty_message": "Enter a username for quick check",
+        "quick_check_invalid_title": "Invalid username",
+        "quick_check_invalid_message": "Only A-Z letters are allowed, without @ at the start",
+        "log_quick_check_started": "Quick check",
+        "warning_reserved": "Warning: The program may mistakenly mark platform-reserved usernames as free. Manual recheck is required. To apply changes from this settings section, restart the active checking process.",
+        "log_found_missing": "found.txt is missing",
+        "log_found_copied": "The contents of found.txt were copied to the clipboard",
+        "log_found_copy_failed": "Could not copy found.txt",
         "config_save_group": "Save config",
         "config_name": "Name",
         "config_save": "Save",
@@ -186,24 +235,32 @@ TRANSLATIONS = {
         "config_loaded": "Config loaded",
         "config_save_failed": "Could not save config",
         "config_load_failed": "Could not load config",
-        "config_note": "The config stores settings for the Generator, Checker, and Settings tabs, except the words.txt and found.txt paths.",
+        "config_save_sections": "Save:",
+        "config_load_sections": "Load:",
+        "config_section_generator": "Generator",
+        "config_section_check": "Checker",
+        "config_section_ui": "Settings",
+        "config_note": "The config can store selected sections from Generator, Checker, and Settings, except words.txt and found.txt.",
         "tip_output_file": "Where to save the generated list. The file will be overwritten on each run.",
         "tip_output_count": "How many usernames to save to the file.",
-        "tip_quality": "How rare each individual word should be: 1 = common words like error, 5 = rarer ones like bouquet.",
+        "tip_quality": "How rare each individual word should be: 1 = common words: error, nice 5 = rarer ones like bouquet, vellichor",
         "tip_length": "The total username length, including any prefix, suffix, and all combined words.",
-        "tip_words_in_username": "How many words to combine into one username. For example, 3..3 always produces exactly three words.",
-        "tip_generator_mode": "English words uses the English wordfreq list. Translit uses Russian words converted to Latin letters. Random letters generates plain a-z strings with no dictionary.",
-        "tip_add_articles": "Tries to add a/an/the at the start or between words, for example thegrave or reaperthegrave.",
-        "tip_dedupe_letters": "Collapses repeated letters inside each source word before joining, for example spontannyh -> spontanyh. Word boundaries stay untouched.",
-        "tip_scan": "How many wordfreq entries to scan. Higher scan values give you more options, but generation takes longer.",
-        "tip_seed": "Locks the randomizer. Using the same seed gives you repeatable output.",
-        "tip_prefix": "Text to prepend to every generated username.",
-        "tip_suffix": "Text to append to every generated username.",
-        "tip_wordlist": "The file containing words or ready-made usernames to check.",
-        "tip_workers": "How many requests to run in parallel. Setting this too high makes rate limits more likely.",
-        "tip_limit": "How many lines to check. 0 means the whole file.",
-        "tip_delay": "Adds a small randomized pause between requests on each worker so rate limits trigger less often.",
-        "tip_check_order": "How to walk through the list: keep file order, shuffle it, start with shorter names, or start with longer ones.",
+        "tip_words_in_username": "How many words to combine into one username. 3..3 always produces exactly three words.",
+        "tip_generator_mode": "English words = existing English words only. Translit = Russian words converted to Latin letters. Random letters = random a-z letter combinations.",
+        "tip_vowel_after_consonant": "A vowel will be placed after every consonant.",
+        "tip_add_articles": "Tries to add a/an/the at the start or between words, for example: thegrave, reaperthegrave.",
+        "tip_dedupe_letters": "Removes repeated letters inside each separate word before joining, for example: spontannyh -> spontanyh.",
+        "tip_scan": "How many words to take from the dictionary for scanning. Higher scan = more options, but slower.",
+        "tip_seed": "Locks randomness. The same seed gives a repeatable result.",
+        "tip_prefix": "Text that will be added to the start of every username.",
+        "tip_suffix": "Text that will be added to the end of every username.",
+        "tip_wordlist": "File with generated usernames for checking.",
+        "tip_workers": "How many requests to send in parallel. If set too high, rate limits happen more often.",
+        "tip_limit": "How many lines to check. 0 = the whole file.",
+        "tip_delay": "A small randomized pause between each batch of requests to hit limits less often.",
+        "tip_stop_after_error": "Automatically stops the search after a timeout, rate limit, or another network error.",
+        "tip_check_order": "Which order to walk through the list. This order also affects found.txt",
+        "tip_quick_check": "Quickly check one username using the selected parameters",
     },
 }
 
@@ -425,6 +482,7 @@ class App(tk.Tk):
         self.min_words = tk.IntVar(value=1)
         self.max_words = tk.IntVar(value=1)
         self.generator_mode = tk.StringVar(value="english_words")
+        self.vowel_after_consonant = tk.BooleanVar(value=False)
         self.add_articles = tk.BooleanVar(value=False)
         self.dedupe_letters = tk.BooleanVar(value=False)
         self.prefix = tk.StringVar(value="")
@@ -445,12 +503,22 @@ class App(tk.Tk):
         self.check_github = tk.BooleanVar(value=False)
         self.export_found = tk.BooleanVar(value=False)
         self.hide_busy = tk.BooleanVar(value=False)
+        self.hide_warn = tk.BooleanVar(value=False)
+        self.stop_after_error = tk.BooleanVar(value=False)
         self.config_name = tk.StringVar(value="")
         self.selected_config = tk.StringVar(value="")
+        self.save_generator_section = tk.BooleanVar(value=True)
+        self.save_check_section = tk.BooleanVar(value=True)
+        self.save_ui_section = tk.BooleanVar(value=True)
+        self.load_generator_section = tk.BooleanVar(value=True)
+        self.load_check_section = tk.BooleanVar(value=True)
+        self.load_ui_section = tk.BooleanVar(value=True)
         self.ui_language = tk.StringVar(value="ru")
         self.debug_mode = tk.BooleanVar(value=False)
         self.autosave_latest = tk.BooleanVar(value=True)
+        self.found_format = tk.StringVar(value="newline")
         self.progress_text = tk.StringVar(value="Checked: 0/0   found: 0")
+        self.quick_username = tk.StringVar(value="")
         self.progress_total = 0
         self.progress_checked = 0
         self.progress_found = 0
@@ -480,6 +548,7 @@ class App(tk.Tk):
         return {
             "in_order": self.tr("check_order_in_order"),
             "random": self.tr("check_order_random"),
+            "alphabet": self.tr("check_order_alphabet"),
             "short_first": self.tr("check_order_short_first"),
             "long_first": self.tr("check_order_long_first"),
         }
@@ -493,6 +562,21 @@ class App(tk.Tk):
     def set_check_order_from_value(self, value: str):
         labels = self.check_order_labels()
         self.check_order.set(labels.get(value, labels["in_order"]))
+
+    def found_format_labels(self) -> dict[str, str]:
+        return {
+            "newline": self.tr("found_format_newline"),
+            "space_comma_space": self.tr("found_format_space_comma_space"),
+            "comma": self.tr("found_format_comma"),
+            "space": self.tr("found_format_space"),
+        }
+
+    def set_found_format_from_value(self, value: str):
+        labels = self.found_format_labels()
+        self.found_format.set(value if value in labels else "newline")
+
+    def _found_format_button_text(self, value: str) -> str:
+        return self.found_format_labels().get(value, self.tr("found_format_newline"))
 
     def _ui(self):
         root = ttk.Frame(self, padding=8)
@@ -527,6 +611,15 @@ class App(tk.Tk):
         self.pause_btn = ttk.Button(bar, text=self.tr("action_pause"), command=self.pause_check)
         self.clear_btn = ttk.Button(bar, text=self.tr("action_clear_log"), command=self.clear_log)
         self.progress_label = ttk.Label(bar, textvariable=self.progress_text, anchor="w")
+        self.quick_help_label = self._help_label(bar, tip_key="tip_quick_check")
+        self.quick_username_entry = ttk.Entry(
+            bar,
+            textvariable=self.quick_username,
+            width=16,
+            validate="key",
+            validatecommand=(root.register(self._validate_quick_username), "%P"),
+        )
+        self.quick_check_btn = ttk.Button(bar, text=self.tr("action_quick_check"), command=self.quick_check_username)
         self.folder_btn = ttk.Button(bar, text=self.tr("action_folder"), command=self.open_folder)
         self.gen_btn.pack(side="left")
         self.stop_btn.pack(side="left", padx=(5, 0))
@@ -572,6 +665,9 @@ class App(tk.Tk):
         for btn in (self.gen_btn, self.start_btn, self.stop_btn, self.pause_btn, self.clear_btn):
             btn.pack_forget()
         self.progress_label.pack_forget()
+        self.quick_help_label.pack_forget()
+        self.quick_username_entry.pack_forget()
+        self.quick_check_btn.pack_forget()
         current = self.tabs.select() if hasattr(self, "tabs") else ""
         generator_tab = str(self.tab_refs.get("tab_generator")) if hasattr(self, "tab_refs") else ""
         config_tab = str(self.tab_refs.get("tab_config")) if hasattr(self, "tab_refs") else ""
@@ -599,6 +695,9 @@ class App(tk.Tk):
             self.start_btn.pack(side="left")
         self.clear_btn.pack(side="left", padx=5)
         self.progress_label.pack(side="left", padx=(10, 0))
+        self.quick_help_label.pack(side="left", padx=(18, 4))
+        self.quick_username_entry.pack(side="left")
+        self.quick_check_btn.pack(side="left", padx=(5, 0))
 
     def _gen_tab(self, tab):
         tab.columnconfigure(0, weight=1)
@@ -637,7 +736,10 @@ class App(tk.Tk):
         self.generator_mode_translit.grid(row=2, column=0, sticky="w")
         self.generator_mode_random = ttk.Radiobutton(opts, text=self.tr("generator_mode_random_letters"), variable=self.generator_mode, value="random_letters", command=self._update_generator_mode_ui)
         self.generator_mode_random.grid(row=3, column=0, sticky="w")
-        self._help_label(opts, tip_key="tip_generator_mode").grid(row=0, column=1, rowspan=4, sticky="nw", padx=(8, 0))
+        self._help_label(opts, tip_key="tip_generator_mode").grid(row=0, column=1, rowspan=6, sticky="nw", padx=(8, 0))
+        self.vowel_after_consonant_check = ttk.Checkbutton(opts, text=self.tr("generator_vowel_after_consonant"), variable=self.vowel_after_consonant)
+        self.vowel_after_consonant_check.grid(row=3, column=2, sticky="w", padx=(12, 0))
+        self._help_label(opts, tip_key="tip_vowel_after_consonant").grid(row=3, column=3, sticky="w")
         self.articles_check = ttk.Checkbutton(opts, text=self.tr("generator_add_articles"), variable=self.add_articles)
         self.articles_check.grid(row=4, column=0, sticky="w", pady=(4, 0))
         self._help_label(opts, tip_key="tip_add_articles").grid(row=4, column=1, sticky="w")
@@ -660,15 +762,20 @@ class App(tk.Tk):
         self._row(tab, 0, 2, "workers", self.workers, width=10, tip_key="tip_workers")
         self._row(tab, 1, 0, "limit", self.limit, width=10, tip_key="tip_limit")
         self._row(tab, 1, 2, "delay", self.delay, width=10, tip_key="tip_delay")
+        stop_box = ttk.Frame(tab)
+        stop_box.grid(row=2, column=2, columnspan=2, sticky="w", pady=(0, 3))
+        self.stop_after_error_check = ttk.Checkbutton(stop_box, text=self.tr("check_stop_after_error"), variable=self.stop_after_error)
+        self.stop_after_error_check.pack(side="left")
+        self._help_label(stop_box, tip_key="tip_stop_after_error").pack(side="left")
         order_box = ttk.Frame(tab)
-        order_box.grid(row=2, column=0, columnspan=4, sticky="w", pady=(4, 4))
+        order_box.grid(row=3, column=0, columnspan=4, sticky="w", pady=(4, 4))
         self.check_order_label = ttk.Label(order_box, text=self.tr("check_order"))
         self.check_order_label.pack(side="left")
         self._help_label(order_box, tip_key="tip_check_order").pack(side="left")
         self.check_order_combo = ttk.Combobox(order_box, textvariable=self.check_order, values=list(self.check_order_labels().values()), width=20, state="readonly")
         self.check_order_combo.pack(side="left", padx=(8, 0))
         checks = ttk.LabelFrame(tab, text=self.tr("check_checks"), padding=8)
-        checks.grid(row=3, column=0, columnspan=4, sticky="w", pady=(8, 4))
+        checks.grid(row=4, column=0, columnspan=4, sticky="w", pady=(8, 4))
         self.checks_frame = checks
         ttk.Checkbutton(checks, text="check telegram", variable=self.check_tme).pack(side="left", padx=(0, 12))
         ttk.Checkbutton(checks, text="check fragment (telegram)", variable=self.check_fragment).pack(side="left", padx=(0, 12))
@@ -678,20 +785,24 @@ class App(tk.Tk):
         ttk.Checkbutton(checks, text="youtube", variable=self.check_youtube).pack(side="left", padx=(0, 12))
         ttk.Checkbutton(checks, text="github", variable=self.check_github).pack(side="left")
         options = ttk.LabelFrame(tab, text=self.tr("check_output"), padding=8)
-        options.grid(row=4, column=0, columnspan=4, sticky="w", pady=(4, 4))
+        options.grid(row=5, column=0, columnspan=4, sticky="w", pady=(4, 4))
         self.check_output_frame = options
         self.export_found_check = ttk.Checkbutton(options, text=self.tr("check_export_found"), variable=self.export_found)
         self.export_found_check.pack(side="left", padx=(0, 14))
         self.hide_busy_check = ttk.Checkbutton(options, text=self.tr("check_hide_busy"), variable=self.hide_busy)
         self.hide_busy_check.pack(side="left", padx=(0, 14))
+        self.hide_warn_check = ttk.Checkbutton(options, text=self.tr("check_hide_warn"), variable=self.hide_warn)
+        self.hide_warn_check.pack(side="left", padx=(0, 14))
         self.delete_found_btn = ttk.Button(options, text=self.tr("check_delete_found"), command=self.delete_found_file)
-        self.delete_found_btn.pack(side="left")
+        self.delete_found_btn.pack(side="left", padx=(0, 14))
+        self.copy_found_btn = ttk.Button(options, text=self.tr("check_copy_found"), command=self.copy_found_file)
+        self.copy_found_btn.pack(side="left")
 
         self.pulse_visualizer = PulseVisualizer(tab, self.free_busy_text)
-        self.pulse_visualizer.grid(row=5, column=0, columnspan=4, sticky="ew", pady=(8, 0))
+        self.pulse_visualizer.grid(row=6, column=0, columnspan=4, sticky="ew", pady=(8, 0))
         self.pulse_visualizer.canvas.bind("<Configure>", lambda _e: self._draw_visualizer())
         self.warning_label = ttk.Label(tab, text=self.tr("warning_reserved"), wraplength=680, justify="left")
-        self.warning_label.grid(row=6, column=0, columnspan=4, sticky="w", pady=(8, 0))
+        self.warning_label.grid(row=7, column=0, columnspan=4, sticky="w", pady=(8, 0))
 
     def _config_tab(self, tab):
         tab.columnconfigure(0, weight=1)
@@ -704,6 +815,16 @@ class App(tk.Tk):
         ttk.Entry(save_box, textvariable=self.config_name).grid(row=0, column=1, sticky="ew", padx=(8, 8))
         self.config_save_btn = ttk.Button(save_box, text=self.tr("config_save"), command=self.save_config)
         self.config_save_btn.grid(row=0, column=2, sticky="e")
+        save_sections = ttk.Frame(save_box)
+        save_sections.grid(row=1, column=0, columnspan=3, sticky="w", pady=(8, 0))
+        self.config_save_sections_label = ttk.Label(save_sections, text=self.tr("config_save_sections"))
+        self.config_save_sections_label.pack(side="left", padx=(0, 8))
+        self.config_save_generator_check = ttk.Checkbutton(save_sections, text=self.tr("config_section_generator"), variable=self.save_generator_section)
+        self.config_save_generator_check.pack(side="left")
+        self.config_save_check_check = ttk.Checkbutton(save_sections, text=self.tr("config_section_check"), variable=self.save_check_section)
+        self.config_save_check_check.pack(side="left", padx=(8, 0))
+        self.config_save_ui_check = ttk.Checkbutton(save_sections, text=self.tr("config_section_ui"), variable=self.save_ui_section)
+        self.config_save_ui_check.pack(side="left", padx=(8, 0))
 
         load_box = ttk.LabelFrame(tab, text=self.tr("config_load_group"), padding=8)
         load_box.grid(row=1, column=0, sticky="ew")
@@ -717,6 +838,16 @@ class App(tk.Tk):
         self.config_refresh_btn.grid(row=0, column=2, sticky="e", padx=(0, 8))
         self.config_load_btn = ttk.Button(load_box, text=self.tr("config_load"), command=self.load_selected_config)
         self.config_load_btn.grid(row=0, column=3, sticky="e")
+        load_sections = ttk.Frame(load_box)
+        load_sections.grid(row=1, column=0, columnspan=4, sticky="w", pady=(8, 0))
+        self.config_load_sections_label = ttk.Label(load_sections, text=self.tr("config_load_sections"))
+        self.config_load_sections_label.pack(side="left", padx=(0, 8))
+        self.config_load_generator_check = ttk.Checkbutton(load_sections, text=self.tr("config_section_generator"), variable=self.load_generator_section)
+        self.config_load_generator_check.pack(side="left")
+        self.config_load_check_check = ttk.Checkbutton(load_sections, text=self.tr("config_section_check"), variable=self.load_check_section)
+        self.config_load_check_check.pack(side="left", padx=(8, 0))
+        self.config_load_ui_check = ttk.Checkbutton(load_sections, text=self.tr("config_section_ui"), variable=self.load_ui_section)
+        self.config_load_ui_check.pack(side="left", padx=(8, 0))
 
         note = ttk.Label(
             tab,
@@ -753,6 +884,40 @@ class App(tk.Tk):
         self.github_badge.bind("<Button-1>", lambda _e: self.open_github())
         self._load_github_icon()
 
+        found_box = ttk.LabelFrame(tab, text=self.tr("settings_found_title"), padding=10)
+        found_box.grid(row=1, column=0, sticky="ew")
+        self.settings_found_frame = found_box
+        self.settings_found_format_label = ttk.Label(found_box, text=self.tr("settings_found_format"))
+        self.settings_found_format_label.grid(row=0, column=0, sticky="w")
+        self.found_format_newline_radio = ttk.Radiobutton(
+            found_box,
+            text=self._found_format_button_text("newline"),
+            variable=self.found_format,
+            value="newline",
+        )
+        self.found_format_newline_radio.grid(row=1, column=0, sticky="w", pady=(8, 0))
+        self.found_format_space_comma_space_radio = ttk.Radiobutton(
+            found_box,
+            text=self._found_format_button_text("space_comma_space"),
+            variable=self.found_format,
+            value="space_comma_space",
+        )
+        self.found_format_space_comma_space_radio.grid(row=2, column=0, sticky="w")
+        self.found_format_comma_radio = ttk.Radiobutton(
+            found_box,
+            text=self._found_format_button_text("comma"),
+            variable=self.found_format,
+            value="comma",
+        )
+        self.found_format_comma_radio.grid(row=3, column=0, sticky="w")
+        self.found_format_space_radio = ttk.Radiobutton(
+            found_box,
+            text=self._found_format_button_text("space"),
+            variable=self.found_format,
+            value="space",
+        )
+        self.found_format_space_radio.grid(row=4, column=0, sticky="w")
+
     def _update_generator_mode_ui(self):
         random_mode = self.generator_mode.get() == "random_letters"
         if random_mode:
@@ -763,6 +928,8 @@ class App(tk.Tk):
             self.words_slider.set_enabled(not random_mode)
         if hasattr(self, "articles_check"):
             self.articles_check.state(["disabled"] if random_mode else ["!disabled"])
+        if hasattr(self, "vowel_after_consonant_check"):
+            self.vowel_after_consonant_check.state(["!disabled"] if random_mode else ["disabled"])
 
     def apply_language(self):
         lang = self._serialize_ui_language()
@@ -778,18 +945,33 @@ class App(tk.Tk):
         self.stop_btn.config(text=self.tr("action_stop"))
         self.pause_btn.config(text=self.tr("action_pause"))
         self.clear_btn.config(text=self.tr("action_clear_log"))
+        self.quick_check_btn.config(text=self.tr("action_quick_check"))
         self.folder_btn.config(text=self.tr("action_folder"))
         self.settings_frame.config(text=self.tr("settings_title"))
         self.settings_language_label.config(text=self.tr("settings_language"))
         self.settings_debug_check.config(text=self.tr("settings_debug"))
         self.settings_autosave_check.config(text=self.tr("settings_autosave"))
+        self.settings_found_frame.config(text=self.tr("settings_found_title"))
+        self.settings_found_format_label.config(text=self.tr("settings_found_format"))
+        self.found_format_newline_radio.config(text=self._found_format_button_text("newline"))
+        self.found_format_space_comma_space_radio.config(text=self._found_format_button_text("space_comma_space"))
+        self.found_format_comma_radio.config(text=self._found_format_button_text("comma"))
+        self.found_format_space_radio.config(text=self._found_format_button_text("space"))
         self.config_save_frame.config(text=self.tr("config_save_group"))
         self.config_name_label.config(text=self.tr("config_name"))
         self.config_save_btn.config(text=self.tr("config_save"))
+        self.config_save_sections_label.config(text=self.tr("config_save_sections"))
+        self.config_save_generator_check.config(text=self.tr("config_section_generator"))
+        self.config_save_check_check.config(text=self.tr("config_section_check"))
+        self.config_save_ui_check.config(text=self.tr("config_section_ui"))
         self.config_load_frame.config(text=self.tr("config_load_group"))
         self.config_existing_label.config(text=self.tr("config_existing"))
         self.config_refresh_btn.config(text=self.tr("config_refresh"))
         self.config_load_btn.config(text=self.tr("config_load"))
+        self.config_load_sections_label.config(text=self.tr("config_load_sections"))
+        self.config_load_generator_check.config(text=self.tr("config_section_generator"))
+        self.config_load_check_check.config(text=self.tr("config_section_check"))
+        self.config_load_ui_check.config(text=self.tr("config_section_ui"))
         self.warning_label.config(text=self.tr("warning_reserved"))
         self.config_note_label.config(text=self.tr("config_note"))
         self.generator_output_frame.config(text=self.tr("generator_output"))
@@ -799,6 +981,7 @@ class App(tk.Tk):
         self.generator_mode_english.config(text=self.tr("generator_mode_english_words"))
         self.generator_mode_translit.config(text=self.tr("generator_mode_translit"))
         self.generator_mode_random.config(text=self.tr("generator_mode_random_letters"))
+        self.vowel_after_consonant_check.config(text=self.tr("generator_vowel_after_consonant"))
         self.articles_check.config(text=self.tr("generator_add_articles"))
         self.dedupe_check.config(text=self.tr("generator_dedupe_letters"))
         self.delete_words_btn.config(text=self.tr("generator_delete_file"))
@@ -816,9 +999,12 @@ class App(tk.Tk):
         self.set_check_order_from_value(order_value)
         self.checks_frame.config(text=self.tr("check_checks"))
         self.check_output_frame.config(text=self.tr("check_output"))
+        self.stop_after_error_check.config(text=self.tr("check_stop_after_error"))
         self.export_found_check.config(text=self.tr("check_export_found"))
         self.hide_busy_check.config(text=self.tr("check_hide_busy"))
+        self.hide_warn_check.config(text=self.tr("check_hide_warn"))
         self.delete_found_btn.config(text=self.tr("check_delete_found"))
+        self.copy_found_btn.config(text=self.tr("check_copy_found"))
         self.lang_combo["values"] = ["ru | " + self.tr("language_ru"), "en | " + self.tr("language_en")]
         self.lang_combo.set(f"{self.ui_language.get()} | {self.tr('language_ru' if self.ui_language.get() == 'ru' else 'language_en')}")
         self.update_action_bar()
@@ -997,10 +1183,17 @@ class App(tk.Tk):
         self._draw_visualizer()
         self.after(VISUALIZER_INTERVAL_MS, self._animate_visualizer)
 
-    def _config_payload(self) -> dict:
-        return {
-            "version": 3,
-            "generator": {
+    def _config_payload(self, include_generator: bool = True, include_check: bool = True, include_ui: bool = True) -> dict:
+        payload: dict = {
+            "version": 5,
+            "sections": {
+                "generator": include_generator,
+                "check": include_check,
+                "ui": include_ui,
+            },
+        }
+        if include_generator:
+            payload["generator"] = {
                 "count": self.count.get(),
                 "min_quality": self.min_quality.get(),
                 "max_quality": self.max_quality.get(),
@@ -1009,14 +1202,16 @@ class App(tk.Tk):
                 "min_words": self.min_words.get(),
                 "max_words": self.max_words.get(),
                 "generator_mode": self.generator_mode.get(),
+                "vowel_after_consonant": self.vowel_after_consonant.get(),
                 "add_articles": self.add_articles.get(),
                 "dedupe_letters": self.dedupe_letters.get(),
                 "prefix": self.prefix.get(),
                 "suffix": self.suffix.get(),
                 "scan": self.scan.get(),
                 "seed": self.seed.get(),
-            },
-            "check": {
+            }
+        if include_check:
+            payload["check"] = {
                 "workers": self.workers.get(),
                 "limit": self.limit.get(),
                 "delay": self.delay.get(),
@@ -1030,13 +1225,17 @@ class App(tk.Tk):
                 "check_github": self.check_github.get(),
                 "export_found": self.export_found.get(),
                 "hide_busy": self.hide_busy.get(),
-            },
-            "ui": {
+                "hide_warn": self.hide_warn.get(),
+                "stop_after_error": self.stop_after_error.get(),
+            }
+        if include_ui:
+            payload["ui"] = {
                 "language": self._serialize_ui_language(),
                 "debug_mode": self.debug_mode.get(),
                 "autosave_latest": self.autosave_latest.get(),
-            },
-        }
+                "found_format": self.found_format.get(),
+            }
+        return payload
 
     def _sanitize_config_name(self, raw_name: str) -> str:
         name = raw_name.strip()
@@ -1064,7 +1263,11 @@ class App(tk.Tk):
         if path is None:
             messagebox.showwarning(self.tr("config_empty_title"), self.tr("config_empty_message"))
             return
-        payload = self._config_payload()
+        payload = self._config_payload(
+            include_generator=self.save_generator_section.get(),
+            include_check=self.save_check_section.get(),
+            include_ui=self.save_ui_section.get(),
+        )
         try:
             path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
             self.selected_config.set(path.stem)
@@ -1081,7 +1284,12 @@ class App(tk.Tk):
             return
         try:
             data = json.loads(path.read_text(encoding="utf-8"))
-            self.apply_config(data)
+            self.apply_config(
+                data,
+                include_generator=self.load_generator_section.get(),
+                include_check=self.load_check_section.get(),
+                include_ui=self.load_ui_section.get(),
+            )
             self.apply_language()
             self.apply_theme()
             self.config_name.set(path.stem)
@@ -1089,48 +1297,55 @@ class App(tk.Tk):
         except Exception as e:
             self.q.put(f"{self.tr('config_load_failed')} {path.name}: {type(e).__name__}: {e}\n")
 
-    def apply_config(self, data: dict):
+    def apply_config(self, data: dict, include_generator: bool = True, include_check: bool = True, include_ui: bool = True):
         generator = data.get("generator", {})
         check = data.get("check", {})
         ui = data.get("ui", {})
-        self.count.set(str(generator.get("count", self.count.get())))
-        self.min_quality.set(int(generator.get("min_quality", self.min_quality.get())))
-        self.max_quality.set(int(generator.get("max_quality", self.max_quality.get())))
-        self.min_len.set(int(generator.get("min_len", self.min_len.get())))
-        self.max_len.set(int(generator.get("max_len", self.max_len.get())))
-        self.min_words.set(int(generator.get("min_words", self.min_words.get())))
-        self.max_words.set(int(generator.get("max_words", self.max_words.get())))
-        mode = str(generator.get("generator_mode", "")).strip()
-        if mode not in {"english_words", "translit", "random_letters"}:
-            mode = "translit" if bool(generator.get("include_translit", False)) else "english_words"
-        self.generator_mode.set(mode)
-        self.add_articles.set(bool(generator.get("add_articles", self.add_articles.get())))
-        self.dedupe_letters.set(bool(generator.get("dedupe_letters", self.dedupe_letters.get())))
-        self.prefix.set(str(generator.get("prefix", self.prefix.get())))
-        self.suffix.set(str(generator.get("suffix", self.suffix.get())))
-        self.scan.set(str(generator.get("scan", self.scan.get())))
-        self.seed.set(str(generator.get("seed", self.seed.get())))
-        self._update_generator_mode_ui()
+        if include_generator and isinstance(generator, dict):
+            self.count.set(str(generator.get("count", self.count.get())))
+            self.min_quality.set(int(generator.get("min_quality", self.min_quality.get())))
+            self.max_quality.set(int(generator.get("max_quality", self.max_quality.get())))
+            self.min_len.set(int(generator.get("min_len", self.min_len.get())))
+            self.max_len.set(int(generator.get("max_len", self.max_len.get())))
+            self.min_words.set(int(generator.get("min_words", self.min_words.get())))
+            self.max_words.set(int(generator.get("max_words", self.max_words.get())))
+            mode = str(generator.get("generator_mode", "")).strip()
+            if mode not in {"english_words", "translit", "random_letters"}:
+                mode = "translit" if bool(generator.get("include_translit", False)) else "english_words"
+            self.generator_mode.set(mode)
+            self.vowel_after_consonant.set(bool(generator.get("vowel_after_consonant", self.vowel_after_consonant.get())))
+            self.add_articles.set(bool(generator.get("add_articles", self.add_articles.get())))
+            self.dedupe_letters.set(bool(generator.get("dedupe_letters", self.dedupe_letters.get())))
+            self.prefix.set(str(generator.get("prefix", self.prefix.get())))
+            self.suffix.set(str(generator.get("suffix", self.suffix.get())))
+            self.scan.set(str(generator.get("scan", self.scan.get())))
+            self.seed.set(str(generator.get("seed", self.seed.get())))
+            self._update_generator_mode_ui()
 
-        self.workers.set(str(check.get("workers", self.workers.get())))
-        self.limit.set(str(check.get("limit", self.limit.get())))
-        self.delay.set(str(check.get("delay", self.delay.get())))
-        self.check_tme.set(bool(check.get("check_tme", self.check_tme.get())))
-        self.check_fragment.set(bool(check.get("check_fragment", self.check_fragment.get())))
-        self.check_instagram.set(bool(check.get("check_instagram", self.check_instagram.get())))
-        self.check_x.set(bool(check.get("check_x", self.check_x.get())))
-        self.check_tiktok.set(bool(check.get("check_tiktok", self.check_tiktok.get())))
-        self.check_youtube.set(bool(check.get("check_youtube", self.check_youtube.get())))
-        self.check_github.set(bool(check.get("check_github", self.check_github.get())))
-        self.export_found.set(bool(check.get("export_found", self.export_found.get())))
-        self.hide_busy.set(bool(check.get("hide_busy", self.hide_busy.get())))
-        order_value = str(check.get("check_order", self.check_order_value()))
-        self.set_check_order_from_value(order_value)
+        if include_check and isinstance(check, dict):
+            self.workers.set(str(check.get("workers", self.workers.get())))
+            self.limit.set(str(check.get("limit", self.limit.get())))
+            self.delay.set(str(check.get("delay", self.delay.get())))
+            self.check_tme.set(bool(check.get("check_tme", self.check_tme.get())))
+            self.check_fragment.set(bool(check.get("check_fragment", self.check_fragment.get())))
+            self.check_instagram.set(bool(check.get("check_instagram", self.check_instagram.get())))
+            self.check_x.set(bool(check.get("check_x", self.check_x.get())))
+            self.check_tiktok.set(bool(check.get("check_tiktok", self.check_tiktok.get())))
+            self.check_youtube.set(bool(check.get("check_youtube", self.check_youtube.get())))
+            self.check_github.set(bool(check.get("check_github", self.check_github.get())))
+            self.export_found.set(bool(check.get("export_found", self.export_found.get())))
+            self.hide_busy.set(bool(check.get("hide_busy", self.hide_busy.get())))
+            self.hide_warn.set(bool(check.get("hide_warn", self.hide_warn.get())))
+            self.stop_after_error.set(bool(check.get("stop_after_error", self.stop_after_error.get())))
+            order_value = str(check.get("check_order", self.check_order_value()))
+            self.set_check_order_from_value(order_value)
 
-        lang = str(ui.get("language", self._serialize_ui_language())).strip().lower()
-        self.ui_language.set(lang if lang in TRANSLATIONS else "ru")
-        self.debug_mode.set(bool(ui.get("debug_mode", self.debug_mode.get())))
-        self.autosave_latest.set(bool(ui.get("autosave_latest", self.autosave_latest.get())))
+        if include_ui and isinstance(ui, dict):
+            lang = str(ui.get("language", self._serialize_ui_language())).strip().lower()
+            self.ui_language.set(lang if lang in TRANSLATIONS else "ru")
+            self.debug_mode.set(bool(ui.get("debug_mode", self.debug_mode.get())))
+            self.autosave_latest.set(bool(ui.get("autosave_latest", self.autosave_latest.get())))
+            self.set_found_format_from_value(str(ui.get("found_format", self.found_format.get())).strip())
 
     def log_line(self, s: str):
         for part in s.splitlines(True):
@@ -1239,6 +1454,63 @@ class App(tk.Tk):
         self.q.put("wordfreq не найден, ставлю автоматически в локальную .venv...\n")
         self.install_deps(show_busy=False)
 
+    def _validate_quick_username(self, value: str) -> bool:
+        return re.fullmatch(r"[A-Za-z]{0,32}", value) is not None
+
+    def _check_service_enabled(self) -> bool:
+        return any((
+            self.check_tme.get(),
+            self.check_fragment.get(),
+            self.check_instagram.get(),
+            self.check_x.get(),
+            self.check_tiktok.get(),
+            self.check_youtube.get(),
+            self.check_github.get(),
+        ))
+
+    def _checker_service_flags(self) -> list[str]:
+        flags: list[str] = []
+        if self.check_tme.get():
+            flags += ["--check-telegram"]
+        if self.check_fragment.get():
+            flags += ["--check-fragment"]
+        if self.check_instagram.get():
+            flags += ["--check-instagram"]
+        if self.check_x.get():
+            flags += ["--check-x"]
+        if self.check_tiktok.get():
+            flags += ["--check-tiktok"]
+        if self.check_youtube.get():
+            flags += ["--check-youtube"]
+        if self.check_github.get():
+            flags += ["--check-github"]
+        return flags
+
+    def _build_checker_cmd(self, wordlist: str, min_len: int = 5, max_len: int = 32, limit_override: str | None = None) -> list[str]:
+        cmd = self.py_cmd(CHECK) + [
+            "--wordlist", wordlist,
+            "--workers", self.workers.get(),
+            "--delay", self.delay.get(),
+            "--min-len", str(min_len),
+            "--max-len", str(max_len),
+            "--pause-file", str(PAUSE_FILE),
+            "--stop-file", str(STOP_FILE),
+            "--order", self.check_order_value(),
+        ]
+        effective_limit = self.limit.get().strip() if limit_override is None else str(limit_override).strip()
+        if effective_limit and effective_limit != "0":
+            cmd += ["--limit", effective_limit]
+        cmd += self._checker_service_flags()
+        if self.export_found.get():
+            cmd += ["--found-out", "found.txt", "--found-format", self.found_format.get()]
+        if self.hide_busy.get():
+            cmd += ["--hide-busy"]
+        if self.hide_warn.get():
+            cmd += ["--hide-warn"]
+        if self.stop_after_error.get():
+            cmd += ["--stop-after-error"]
+        return cmd
+
     def py_cmd(self, script: Path) -> list[str]:
         return [real_python(), "-u", str(script)]
 
@@ -1264,6 +1536,8 @@ class App(tk.Tk):
                 "--min-words", str(self.min_words.get()),
                 "--max-words", str(self.max_words.get()),
             ]
+        elif self.vowel_after_consonant.get():
+            cmd += ["--vowel-after-consonant"]
         if self.add_articles.get():
             cmd += ["--add-articles"]
         if self.dedupe_letters.get():
@@ -1298,11 +1572,60 @@ class App(tk.Tk):
         except Exception as e:
             self.q.put(f"Не смог удалить {path}: {type(e).__name__}: {e}\n")
 
+    def copy_found_file(self):
+        path = (BASE / "found.txt").resolve()
+        if not path.exists():
+            self.q.put(f"{self.tr('log_found_missing')}: {path}\n")
+            return
+        try:
+            content = path.read_text(encoding="utf-8")
+            self.clipboard_clear()
+            self.clipboard_append(content)
+            self.update()
+            self.q.put(f"{self.tr('log_found_copied')}: {path}\n")
+        except Exception as e:
+            self.q.put(f"{self.tr('log_found_copy_failed')} {path}: {type(e).__name__}: {e}\n")
+
     def start_or_continue_check(self):
         if self.paused:
             self.continue_check()
             return
         self.check_names()
+
+    def quick_check_username(self):
+        raw_username = self.quick_username.get().strip()
+        if not raw_username:
+            messagebox.showwarning(self.tr("quick_check_empty_title"), self.tr("quick_check_empty_message"))
+            return
+        if not re.fullmatch(r"[A-Za-z]{1,32}", raw_username):
+            messagebox.showwarning(self.tr("quick_check_invalid_title"), self.tr("quick_check_invalid_message"))
+            return
+        if not self._check_service_enabled():
+            messagebox.showwarning("Нечего проверять", "Включи хотя бы один сервис")
+            return
+        username = raw_username.lower()
+        self.quick_username.set(username)
+        try:
+            QUICK_CHECK_WORDLIST.write_text(username + "\n", encoding="utf-8")
+        except Exception as e:
+            self.q.put(f"Не смог подготовить быструю проверку: {type(e).__name__}: {e}\n")
+            return
+        try:
+            PAUSE_FILE.unlink(missing_ok=True)
+        except Exception:
+            pass
+        try:
+            STOP_FILE.unlink(missing_ok=True)
+        except Exception:
+            pass
+        self.paused = False
+        self._reset_progress()
+        self.q.put(f"{self.tr('log_quick_check_started')}: @{username}\n")
+        self.update_action_bar()
+        cmd = self._build_checker_cmd(str(QUICK_CHECK_WORDLIST), min_len=1, max_len=32, limit_override="1")
+        if self.run_cmd(cmd, on_done=lambda _code: self.check_done(extra_cleanup=[QUICK_CHECK_WORDLIST])):
+            self.check_running = True
+            self.update_action_bar()
 
     def pause_check(self):
         if not (self.proc and self.proc.poll() is None):
@@ -1325,15 +1648,7 @@ class App(tk.Tk):
         self.update_action_bar()
 
     def check_names(self):
-        if not any((
-            self.check_tme.get(),
-            self.check_fragment.get(),
-            self.check_instagram.get(),
-            self.check_x.get(),
-            self.check_tiktok.get(),
-            self.check_youtube.get(),
-            self.check_github.get(),
-        )):
+        if not self._check_service_enabled():
             messagebox.showwarning("Нечего проверять", "Включи хотя бы один сервис")
             return
         try:
@@ -1347,40 +1662,12 @@ class App(tk.Tk):
         self.paused = False
         self._reset_progress()
         self.update_action_bar()
-        cmd = self.py_cmd(CHECK) + [
-            "--wordlist", self.wordlist.get(),
-            "--workers", self.workers.get(),
-            "--delay", self.delay.get(),
-            "--max-len", "32",
-            "--pause-file", str(PAUSE_FILE),
-            "--stop-file", str(STOP_FILE),
-            "--order", self.check_order_value(),
-        ]
-        if self.limit.get().strip() and self.limit.get().strip() != "0":
-            cmd += ["--limit", self.limit.get().strip()]
-        if self.check_tme.get():
-            cmd += ["--check-telegram"]
-        if self.check_fragment.get():
-            cmd += ["--check-fragment"]
-        if self.check_instagram.get():
-            cmd += ["--check-instagram"]
-        if self.check_x.get():
-            cmd += ["--check-x"]
-        if self.check_tiktok.get():
-            cmd += ["--check-tiktok"]
-        if self.check_youtube.get():
-            cmd += ["--check-youtube"]
-        if self.check_github.get():
-            cmd += ["--check-github"]
-        if self.export_found.get():
-            cmd += ["--found-out", "found.txt"]
-        if self.hide_busy.get():
-            cmd += ["--hide-busy"]
+        cmd = self._build_checker_cmd(self.wordlist.get(), min_len=5, max_len=32)
         if self.run_cmd(cmd, on_done=lambda _code: self.check_done()):
             self.check_running = True
             self.update_action_bar()
 
-    def check_done(self):
+    def check_done(self, extra_cleanup: list[Path] | None = None):
         try:
             PAUSE_FILE.unlink(missing_ok=True)
         except Exception:
@@ -1389,6 +1676,12 @@ class App(tk.Tk):
             STOP_FILE.unlink(missing_ok=True)
         except Exception:
             pass
+        if extra_cleanup:
+            for path in extra_cleanup:
+                try:
+                    path.unlink(missing_ok=True)
+                except Exception:
+                    pass
         self.paused = False
         self.check_running = False
         self.update_action_bar()

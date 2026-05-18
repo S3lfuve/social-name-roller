@@ -7,6 +7,7 @@ import string
 from pathlib import Path
 
 RX = re.compile(r"^[a-z]+$")
+VOWELS = "aeiou"
 COMPLEX_BITS = ("tion", "sion", "ough", "eigh", "cial", "tial", "ph", "rh", "mn", "kn", "wr", "ei", "ie", "gue", "que")
 STOPWORDS = {
     "the", "and", "for", "that", "you", "your", "are", "was", "were", "with", "this", "from", "have", "has",
@@ -107,7 +108,30 @@ def collect_words(scan: int, min_q: int, max_q: int, max_piece_len: int, mode: s
     return candidates
 
 
-def generate_random_letters(count: int, min_len: int, max_len: int, prefix: str = "", suffix: str = "") -> list[str]:
+def random_letters_with_vowels(core_len: int) -> str:
+    if core_len <= 0:
+        return ""
+    chars = []
+    prev_is_consonant = False
+    for idx in range(core_len):
+        remaining = core_len - idx
+        if prev_is_consonant or remaining == 1:
+            ch = random.choice(VOWELS)
+        else:
+            ch = random.choice(string.ascii_lowercase)
+        chars.append(ch)
+        prev_is_consonant = ch not in VOWELS
+    return "".join(chars)
+
+
+def generate_random_letters(
+    count: int,
+    min_len: int,
+    max_len: int,
+    prefix: str = "",
+    suffix: str = "",
+    vowel_after_consonant: bool = False,
+) -> list[str]:
     prefix = clean_affix(prefix)
     suffix = clean_affix(suffix)
     fixed_len = len(prefix) + len(suffix)
@@ -125,7 +149,11 @@ def generate_random_letters(count: int, min_len: int, max_len: int, prefix: str 
         if len(result) >= count:
             break
         core_len = random.randint(min_core_len, max_core_len)
-        name = prefix + "".join(random.choice(alphabet) for _ in range(core_len)) + suffix
+        if vowel_after_consonant:
+            core = random_letters_with_vowels(core_len)
+        else:
+            core = "".join(random.choice(alphabet) for _ in range(core_len))
+        name = prefix + core + suffix
         if min_len <= len(name) <= max_len and name not in seen:
             seen.add(name)
             result.append(name)
@@ -188,6 +216,7 @@ def generate(
     dedupe_letters: bool = False,
     prefix: str = "",
     suffix: str = "",
+    vowel_after_consonant: bool = False,
 ) -> list[str]:
     if seed is not None:
         random.seed(seed)
@@ -199,7 +228,7 @@ def generate(
         return []
 
     if generator_mode == "random_letters":
-        return generate_random_letters(count, min_len, max_len, prefix, suffix)
+        return generate_random_letters(count, min_len, max_len, prefix, suffix, vowel_after_consonant=vowel_after_consonant)
 
     pool = collect_words(scan, min_q, max_q, max_len - fixed_len, generator_mode, dedupe_letters)
     if not pool:
@@ -266,6 +295,7 @@ def main() -> int:
     p.add_argument("--include-translit", action="store_true")
     p.add_argument("--add-articles", action="store_true")
     p.add_argument("--dedupe-letters", action="store_true", help="Collapse repeated letters inside each word before composing usernames")
+    p.add_argument("--vowel-after-consonant", action="store_true", help="In random letters mode, force a vowel after each consonant")
     p.add_argument("--prefix", default="")
     p.add_argument("--suffix", default="")
     p.add_argument("--scan", type=int, default=120000, help="How many top wordfreq tokens to scan")
@@ -304,6 +334,7 @@ def main() -> int:
         args.dedupe_letters,
         args.prefix,
         args.suffix,
+        args.vowel_after_consonant,
     )
 
     out = Path(args.out).expanduser()
@@ -318,6 +349,8 @@ def main() -> int:
         print("Translit: only transliterated ru words from wordfreq")
     elif generator_mode == "random_letters":
         print("Source: random letters a-z")
+        if args.vowel_after_consonant:
+            print("Modifier: vowel after each consonant")
     if args.add_articles:
         print("Articles: enabled")
     if args.dedupe_letters:
