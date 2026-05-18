@@ -1,5 +1,9 @@
 # TG Names Roller
 
+<img width="244" height="209" alt="{C032ED8B-9BDA-468A-B101-E98E390E1F91}" src="https://github.com/user-attachments/assets/c456cdc7-b848-4e49-ac38-94f373a3758a" />
+<img width="244" height="248" alt="{4F849069-A447-4680-A796-0D820613B28C}" src="https://github.com/user-attachments/assets/444ce9f7-bdac-4f20-9d84-0cb77ba50fbd" />
+<img width="244" height="209" alt="{C032ED8B-9BDA-468A-B101-E98E390E1F91}" src="https://github.com/user-attachments/assets/14c792a8-d48f-4dd9-8fa5-0d19bb6eac00" />
+
 [![Windows](https://img.shields.io/badge/Windows-supported-0078D6?logo=windows&logoColor=white)](./README.md)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](./README.md)
 [![GUI](https://img.shields.io/badge/Interface-GUI%20%2B%20CLI-4B8BBE)](./README.md)
@@ -221,7 +225,3 @@ This project may be useful for:
 - some platforms may respond inconsistently or apply request limits
 - some usernames still require manual verification before use
 - higher `workers` and lower `delay` increase the chance of hitting limits
-
-## Screenshots
-
-You can add screenshots of the interface, generator, and checker results here.
