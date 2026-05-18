@@ -1,0 +1,52 @@
+# Python caches / bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Runtime state
+.checker_paused
+*.pid
+
+# Generated / user data from roller/checker
+words.txt
+found.txt
+configs/*
+*.csv
+*.log
+*.jsonl
+*.tmp
+*.bak
+
+# Local secrets / API sessions, if Telegram API is added later
+.env
+.env.*
+*.session
+*.session-journal
+api_id.txt
+api_hash.txt
+bot_token.txt
+
+# Build / packaging artifacts
+build/
+dist/
+*.egg-info/
+
+# Test / tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editor / OS junk
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
